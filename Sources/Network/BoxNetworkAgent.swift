@@ -48,6 +48,11 @@ public protocol NetworkAgentProtocol {
     )
 }
 
+public class NetworkEnabler: NSObject, URLSessionDelegate {
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))
+    }
+}
 /// Implementation of networking layer
 public class BoxNetworkAgent: NSObject, NetworkAgentProtocol {
     private let analyticsHeaderGenerator = AnalyticsHeaderGenerator()
@@ -58,7 +63,7 @@ public class BoxNetworkAgent: NSObject, NetworkAgentProtocol {
     // The variable "session" is set as lazy here because self can't be passed as a delegate
     // until after init is finished. It will be computed after init and then used in other
     // functions in this class.
-    private lazy var session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
+    private lazy var session = URLSession(configuration: URLSessionConfiguration.default, delegate: NetworkEnabler(), delegateQueue: nil)
 
     /// Initializer.
     ///
